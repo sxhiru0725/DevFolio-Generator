@@ -2,11 +2,9 @@
 
 DevFolio Generator is a full stack MERN web application that allows developers to create, preview, publish, edit, and share a professional portfolio through a unique public URL.
 
-The application supports both manual form entry and CV PDF import. Users can upload a CV to auto fill portfolio details, review and edit the data, preview the final layout, and then publish the portfolio.
+The application supports both manual form input and CV PDF import. Users can upload a CV to auto fill portfolio details, review and edit the imported data, preview the final layout, and then publish the portfolio.
 
 ## Repository
-
-GitHub Repository:
 
 ```txt
 https://github.com/sxhiru0725/DevFolio-Generator
@@ -14,14 +12,14 @@ https://github.com/sxhiru0725/DevFolio-Generator
 
 ## Project Objective
 
-The goal of this project is to build a full stack portfolio generator where users can enter their portfolio information through a form and generate a public portfolio page.
+The goal of this project is to build a full stack portfolio generator where users can enter portfolio information through a form and generate a public portfolio page.
 
 The application saves portfolio data to MongoDB and renders each portfolio dynamically using a unique username based URL.
 
 Example public portfolio route:
 
 ```txt
-http://localhost:5173/portfolio/sahiru3
+http://localhost:5173/portfolio/imadith
 ```
 
 ## Features
@@ -31,6 +29,8 @@ http://localhost:5173/portfolio/sahiru3
 ```txt
 Home page with platform introduction
 Create portfolio form
+Manual data input
+CV PDF import and auto fill
 Portfolio preview before publishing
 Public portfolio page with unique URL
 Edit existing portfolio
@@ -49,9 +49,15 @@ View count tracking
 
 ```txt
 CV PDF import and auto fill
+Manual form input
 Resume PDF URL support
+Cloudinary resume PDF upload
 Portfolio view count analytics
-Professional UI styling
+JWT authentication with register and login
+Dark and light mode toggle
+Portfolio theme selection
+Drag and drop project ordering
+Professional responsive UI styling
 Public API response testing
 ```
 
@@ -78,6 +84,10 @@ Mongoose
 CORS
 dotenv
 Nodemon
+JWT
+bcryptjs
+multer
+Cloudinary
 ```
 
 ### Database
@@ -95,11 +105,18 @@ DevFolio-Generator
 |-- client
 |   |-- src
 |   |   |-- api
+|   |   |   |-- authApi.js
 |   |   |   |-- portfolioApi.js
+|   |   |   |-- uploadApi.js
 |   |   |
 |   |   |-- components
 |   |   |   |-- Navbar.jsx
+|   |   |   |-- PortfolioDisplay.jsx
 |   |   |   |-- PortfolioForm.jsx
+|   |   |
+|   |   |-- context
+|   |   |   |-- AuthContext.jsx
+|   |   |   |-- ThemeContext.jsx
 |   |   |
 |   |   |-- pages
 |   |   |   |-- Home.jsx
@@ -107,6 +124,8 @@ DevFolio-Generator
 |   |   |   |-- PreviewPortfolio.jsx
 |   |   |   |-- PublicPortfolio.jsx
 |   |   |   |-- EditPortfolio.jsx
+|   |   |   |-- Login.jsx
+|   |   |   |-- Register.jsx
 |   |   |
 |   |   |-- utils
 |   |   |   |-- cvParser.js
@@ -122,19 +141,28 @@ DevFolio-Generator
 |   |   |-- db.js
 |   |
 |   |-- controllers
+|   |   |-- authController.js
 |   |   |-- portfolioController.js
+|   |   |-- uploadController.js
+|   |
+|   |-- middleware
+|   |   |-- authMiddleware.js
 |   |
 |   |-- models
 |   |   |-- Portfolio.js
+|   |   |-- User.js
 |   |
 |   |-- routes
+|   |   |-- authRoutes.js
 |   |   |-- portfolioRoutes.js
+|   |   |-- uploadRoutes.js
 |   |
 |   |-- server.js
 |   |-- package.json
 |
 |-- screenshots
 |-- README.md
+|-- .env.example
 |-- .gitignore
 ```
 
@@ -145,6 +173,10 @@ Create a `.env` file inside the `server` folder.
 ```txt
 PORT=5000
 MONGO_URI=mongodb://127.0.0.1:27017/portfolio_generator
+JWT_SECRET=replace_this_with_a_long_secret_key
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 NODE_ENV=development
 ```
 
@@ -154,7 +186,7 @@ Example location:
 server/.env
 ```
 
-Do not push `.env` to GitHub.
+Do not push `.env` to GitHub. Use `.env.example` for showing the required environment variables.
 
 ## Installation and Setup
 
@@ -202,10 +234,13 @@ Backend should run on:
 http://localhost:5000
 ```
 
-Expected backend message:
+Expected backend response:
 
-```txt
-Developer Portfolio Generator API is running
+```json
+{
+  "success": true,
+  "message": "Developer Portfolio Generator API is running"
+}
 ```
 
 ### 4. Install and Run Frontend
@@ -226,6 +261,8 @@ http://localhost:5173
 
 ## API Endpoints
 
+### Portfolio API
+
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | `/api/portfolio` | Create a new portfolio |
@@ -233,12 +270,26 @@ http://localhost:5173
 | PUT | `/api/portfolio/:username` | Update existing portfolio |
 | DELETE | `/api/portfolio/:username` | Delete portfolio |
 
+### Authentication API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/register` | Register a new user |
+| POST | `/api/auth/login` | Login user and return JWT token |
+| GET | `/api/auth/me` | Get logged in user details |
+
+### Upload API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/upload/resume` | Upload resume PDF to Cloudinary |
+
 ## Example API Test
 
 Open this in the browser:
 
 ```txt
-http://localhost:5000/api/portfolio/sahiru3
+http://localhost:5000/api/portfolio/imadith
 ```
 
 Successful response example:
@@ -247,7 +298,7 @@ Successful response example:
 {
   "success": true,
   "data": {
-    "username": "sahiru3",
+    "username": "imadith",
     "fullName": "Sahiru Imadith",
     "title": "Full Stack Developer",
     "skills": ["HTML", "CSS", "JavaScript", "React", "Node.js"]
@@ -264,6 +315,8 @@ Successful response example:
 | Preview Portfolio | `/preview` | Read only preview before publishing |
 | Public Portfolio | `/portfolio/:username` | Public portfolio page |
 | Edit Portfolio | `/edit/:username` | Edit existing portfolio |
+| Login | `/login` | User login page |
+| Register | `/register` | User registration page |
 
 ## How to Use the App
 
@@ -273,10 +326,13 @@ Successful response example:
 1. Open the frontend at http://localhost:5173
 2. Click Create Portfolio
 3. Fill in personal details, contact, skills, projects, and experience
-4. Click Preview Portfolio
-5. Review the portfolio
-6. Click Publish Portfolio
-7. Open the generated public portfolio URL
+4. Choose a portfolio theme
+5. Drag and reorder projects if needed
+6. Add a resume URL or upload a resume PDF
+7. Click Preview Portfolio
+8. Review the portfolio
+9. Click Publish Portfolio
+10. Open the generated public portfolio URL
 ```
 
 ### CV Import Portfolio Creation
@@ -297,16 +353,29 @@ CV parsing is not always perfect because CV formats are different.
 Users should review and edit imported data before publishing.
 ```
 
+### Resume Upload
+
+```txt
+1. Open Create Portfolio page
+2. Upload a PDF resume in the Resume Upload section
+3. The backend sends the file to Cloudinary
+4. The returned Cloudinary link is saved as the portfolio resume URL
+```
+
+Cloudinary upload requires valid Cloudinary environment variables in `server/.env`.
+
 ## MongoDB Schema
 
 ```js
 UserPortfolio {
+  owner: ObjectId,
   username: String,
   fullName: String,
   title: String,
   bio: String,
   profileImage: String,
   resumeUrl: String,
+  theme: String,
   contact: {
     email: String,
     linkedin: String,
@@ -337,63 +406,43 @@ UserPortfolio {
 
 ## Screenshots
 
-Add your screenshots inside the `screenshots` folder.
-
-Recommended screenshots:
-
-```txt
-screenshots/home-page.png
-screenshots/create-portfolio-form.png
-screenshots/cv-import-section.png
-screenshots/preview-page.png
-screenshots/public-portfolio-page.png
-screenshots/edit-portfolio-page.png
-screenshots/backend-api-response.png
-```
-
-Then replace the placeholders below after adding screenshots.
+Add screenshots inside the `screenshots` folder.
 
 ### Home Page
 
-```md
 ![Home Page](screenshots/home-page.png)
-```
 
 ### Create Portfolio Page
 
-```md
 ![Create Portfolio](screenshots/create-portfolio-form.png)
-```
 
 ### CV Import Section
 
-```md
 ![CV Import](screenshots/cv-import-section.png)
-```
+
+### Create Portfolio Form Continued
+
+![Create Portfolio Form Continued](screenshots/create-portfolio-form2.png)
+
+### Create Portfolio Form Projects and Experience
+
+![Create Portfolio Form Projects and Experience](screenshots/create-portfolio-form3.png)
 
 ### Preview Page
 
-```md
 ![Preview Page](screenshots/preview-page.png)
-```
 
 ### Public Portfolio Page
 
-```md
 ![Public Portfolio](screenshots/public-portfolio-page.png)
-```
 
 ### Edit Portfolio Page
 
-```md
 ![Edit Portfolio](screenshots/edit-portfolio-page.png)
-```
 
 ### Backend API Response
 
-```md
 ![Backend API](screenshots/backend-api-response.png)
-```
 
 ## Validation and Error Handling
 
@@ -404,6 +453,7 @@ Unique username check
 URL safe username format
 Duplicate username error message
 CV import error message
+Resume upload error message
 Portfolio not found handling
 Backend API error responses
 ```
@@ -413,20 +463,20 @@ Backend API error responses
 ```txt
 CV import uses basic text extraction and keyword matching.
 Some CV layouts may not extract all fields accurately.
-Resume upload currently supports a PDF URL rather than storing files with Cloudinary.
-Authentication is not included because it was listed as an optional bonus feature.
+Cloudinary resume upload requires valid Cloudinary environment variables.
+Authentication is implemented, but portfolio editing is still kept flexible for demo and testing purposes.
+Deployment is not included in this local version.
 ```
 
 ## Future Improvements
 
 ```txt
-Cloudinary resume file upload
-JWT authentication
-Dark and light theme toggle
-Drag and drop project ordering
-Deployment to Vercel and Render
-Improved AI based CV parsing
-SEO meta tags for portfolio pages
+Deploy frontend to Vercel
+Deploy backend to Render
+Improve AI based CV parsing
+Add SEO meta tags for portfolio pages
+Add stronger ownership protection for editing portfolios
+Add dashboard page for logged in users
 ```
 
 ## Testing Checklist
@@ -436,12 +486,19 @@ Home page loads
 Create Portfolio page loads
 Manual form submission works
 CV PDF import works
+Resume PDF URL works
+Cloudinary resume upload works when Cloudinary keys are configured
+Theme selection works
+Dark and light mode toggle works
+Project drag and drop ordering works
 Preview page displays entered data
 Publish button saves data to MongoDB
 Public portfolio page loads by username
 Edit page pre fills existing data
 PUT request updates portfolio
 Duplicate username shows error
+Register page creates user account
+Login page returns JWT token
 Backend API returns JSON data
 MongoDB stores portfolio data
 Frontend is responsive on desktop and mobile
@@ -464,6 +521,6 @@ Short 2 to 3 minute walkthrough video is recorded
 ## Author
 
 ```txt
-Sahiru Hennadige
+Sahiru Imadith Saunda Hennadige
 GitHub: https://github.com/sxhiru0725
 ```
