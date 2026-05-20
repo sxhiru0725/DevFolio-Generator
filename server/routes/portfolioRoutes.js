@@ -1,7 +1,8 @@
 import express from "express";
+
 import {
     createPortfolio,
-    getPortfolio,
+    getPortfolioByUsername,
     updatePortfolio,
     deletePortfolio,
 } from "../controllers/portfolioController.js";
@@ -9,7 +10,7 @@ import {
 const router = express.Router();
 
 router.post("/", createPortfolio);
-router.get("/:username", getPortfolio);
+router.get("/:username", getPortfolioByUsername);
 router.put("/:username", updatePortfolio);
 router.delete("/:username", deletePortfolio);
 
