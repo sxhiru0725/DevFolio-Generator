@@ -1,17 +1,21 @@
 import express from "express";
 
 import {
-    createPortfolio,
-    getPortfolioByUsername,
-    updatePortfolio,
-    deletePortfolio,
+  createPortfolio,
+  getPortfolioByUsername,
+  updatePortfolio,
+  deletePortfolio,
+  getMyPortfolios
 } from "../controllers/portfolioController.js";
+
+import { protectOptional, protectRequired } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", createPortfolio);
+router.get("/me/list", protectRequired, getMyPortfolios);
+router.post("/", protectOptional, createPortfolio);
 router.get("/:username", getPortfolioByUsername);
-router.put("/:username", updatePortfolio);
-router.delete("/:username", deletePortfolio);
+router.put("/:username", protectOptional, updatePortfolio);
+router.delete("/:username", protectOptional, deletePortfolio);
 
 export default router;
