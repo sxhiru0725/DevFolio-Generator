@@ -1,5 +1,5 @@
 import * as pdfjsLib from "pdfjs-dist";
-import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
@@ -13,10 +13,7 @@ export const extractTextFromPdf = async (file) => {
     const page = await pdf.getPage(pageNumber);
     const textContent = await page.getTextContent();
 
-    const pageText = textContent.items
-      .map((item) => item.str)
-      .join(" ");
-
+    const pageText = textContent.items.map((item) => item.str).join(" ");
     fullText += pageText + "\n";
   }
 
@@ -41,18 +38,18 @@ const guessName = (text) => {
     .map((line) => line.trim())
     .filter(Boolean);
 
-  const firstUsefulLine = lines.find(
-    (line) =>
-      line.length >= 3 &&
-      line.length <= 60 &&
-      !line.includes("@") &&
-      !line.toLowerCase().includes("github") &&
-      !line.toLowerCase().includes("linkedin") &&
-      !line.toLowerCase().includes("curriculum") &&
-      !line.toLowerCase().includes("resume")
+  return (
+    lines.find(
+      (line) =>
+        line.length >= 3 &&
+        line.length <= 60 &&
+        !line.includes("@") &&
+        !line.toLowerCase().includes("github") &&
+        !line.toLowerCase().includes("linkedin") &&
+        !line.toLowerCase().includes("curriculum") &&
+        !line.toLowerCase().includes("resume")
+    ) || ""
   );
-
-  return firstUsefulLine || "";
 };
 
 const guessTitle = (text) => {
@@ -67,7 +64,7 @@ const guessTitle = (text) => {
     "Web Developer",
     "Computer Science Student",
     "Technical Product Management Intern",
-    "IT Support Technician",
+    "IT Support Technician"
   ];
 
   return titles.find((title) => lowerText.includes(title.toLowerCase())) || "";
@@ -99,7 +96,7 @@ const guessSkills = (text) => {
     "Cybersecurity",
     "Networking",
     "Agile",
-    "Scrum",
+    "Scrum"
   ];
 
   const lowerText = text.toLowerCase();
@@ -118,22 +115,21 @@ const guessProjects = (text) => {
     "Saved",
     "PublishMe",
     "HelpdeskPro",
-    "Crazy Cobra",
+    "Crazy Cobra"
   ];
 
   const lowerText = text.toLowerCase();
 
-  const matchedProjects = possibleProjects.filter((project) =>
-    lowerText.includes(project.toLowerCase())
-  );
-
-  return matchedProjects.map((project) => ({
-    name: project,
-    description: "Imported from CV. Please review and update this description.",
-    techStack: [],
-    githubLink: "",
-    liveDemo: "",
-  }));
+  return possibleProjects
+    .filter((project) => lowerText.includes(project.toLowerCase()))
+    .map((project) => ({
+      name: project,
+      description:
+        "Project details were imported from the CV. Please review and improve this description before publishing.",
+      techStack: [],
+      githubLink: "",
+      liveDemo: ""
+    }));
 };
 
 const guessExperience = (text) => {
@@ -145,7 +141,7 @@ const guessExperience = (text) => {
       role: "Technical Product Management Intern",
       duration: "",
       description:
-        "Imported from CV. Please review and update this experience description.",
+        "Experience details were imported from the CV. Please review and improve this description."
     });
   }
 
@@ -179,11 +175,11 @@ export const parseCvToPortfolioData = async (file) => {
       email,
       linkedin,
       github,
-      website,
+      website
     },
     skills,
     projects,
     experience,
-    extractedText: text,
+    extractedText: text
   };
 };

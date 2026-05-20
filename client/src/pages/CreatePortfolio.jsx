@@ -7,8 +7,8 @@ function CreatePortfolio() {
   const handlePreview = (formData) => {
     navigate("/preview", {
       state: {
-        portfolioData: formData,
-      },
+        portfolioData: formData
+      }
     });
   };
 
@@ -18,8 +18,8 @@ function CreatePortfolio() {
         <p className="eyebrow">Create Portfolio</p>
         <h1>Build your developer portfolio</h1>
         <p className="page-subtitle">
-          Complete the form below, preview your portfolio, then publish it with a
-          unique public URL.
+          Fill the form manually or import a CV. You can preview and edit before
+          publishing.
         </p>
       </div>
 

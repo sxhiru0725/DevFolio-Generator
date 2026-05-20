@@ -9,8 +9,8 @@ function Home() {
         <h1>Create a professional developer portfolio in minutes.</h1>
 
         <p>
-          Build, preview, publish, and share a modern portfolio website using a
-          simple form. Perfect for developers, students, and interns.
+          Build, preview, publish, edit, and share a modern developer portfolio.
+          Users can manually fill the form or import details from a CV PDF.
         </p>
 
         <div className="hero-actions">
@@ -26,18 +26,18 @@ function Home() {
 
       <section className="feature-section" id="features">
         <div className="feature-card">
-          <h3>Dynamic Forms</h3>
-          <p>Add skills, projects, experience, links, and profile details.</p>
+          <h3>Manual or CV Import</h3>
+          <p>Add details manually or upload a CV PDF to auto fill the form.</p>
         </div>
 
         <div className="feature-card">
           <h3>Preview Before Publish</h3>
-          <p>Review your portfolio layout before saving it to MongoDB.</p>
+          <p>Review the portfolio before saving it to MongoDB.</p>
         </div>
 
         <div className="feature-card">
-          <h3>Shareable URL</h3>
-          <p>Each portfolio gets a unique public page using its username.</p>
+          <h3>Bonus Features</h3>
+          <p>Resume upload, theme toggle, project ordering, auth, and analytics.</p>
         </div>
       </section>
     </main>

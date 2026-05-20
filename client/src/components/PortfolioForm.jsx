@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { parseCvToPortfolioData } from "../utils/cvParser";
+import { uploadResumeFile } from "../api/uploadApi";
 
 function PortfolioForm({ initialData, onSubmit, buttonText }) {
   const emptyForm = {
@@ -9,11 +10,12 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
     bio: "",
     profileImage: "",
     resumeUrl: "",
+    theme: "default",
     contact: {
       email: "",
       linkedin: "",
       github: "",
-      website: "",
+      website: ""
     },
     skills: [""],
     projects: [
@@ -22,26 +24,41 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
         description: "",
         techStack: [""],
         githubLink: "",
-        liveDemo: "",
-      },
+        liveDemo: ""
+      }
     ],
     experience: [
       {
         company: "",
         role: "",
         duration: "",
-        description: "",
-      },
-    ],
+        description: ""
+      }
+    ]
   };
 
   const [formData, setFormData] = useState(initialData || emptyForm);
   const [cvImporting, setCvImporting] = useState(false);
   const [cvMessage, setCvMessage] = useState("");
+  const [resumeUploading, setResumeUploading] = useState(false);
+  const [resumeMessage, setResumeMessage] = useState("");
+  const [formError, setFormError] = useState("");
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      setFormData({
+        ...emptyForm,
+        ...initialData,
+        contact: {
+          ...emptyForm.contact,
+          ...initialData.contact
+        },
+        skills: initialData.skills?.length ? initialData.skills : [""],
+        projects: initialData.projects?.length ? initialData.projects : emptyForm.projects,
+        experience: initialData.experience?.length
+          ? initialData.experience
+          : emptyForm.experience
+      });
     }
   }, [initialData]);
 
@@ -71,20 +88,15 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
           email: importedData.contact.email || prev.contact.email,
           linkedin: importedData.contact.linkedin || prev.contact.linkedin,
           github: importedData.contact.github || prev.contact.github,
-          website: importedData.contact.website || prev.contact.website,
+          website: importedData.contact.website || prev.contact.website
         },
-        skills:
-          importedData.skills.length > 0
-            ? importedData.skills
-            : prev.skills,
+        skills: importedData.skills.length > 0 ? importedData.skills : prev.skills,
         projects:
-          importedData.projects.length > 0
-            ? importedData.projects
-            : prev.projects,
+          importedData.projects.length > 0 ? importedData.projects : prev.projects,
         experience:
           importedData.experience.length > 0
             ? importedData.experience
-            : prev.experience,
+            : prev.experience
       }));
 
       setCvMessage(
@@ -97,12 +109,44 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
     }
   };
 
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      setResumeMessage("Please upload a PDF resume only.");
+      return;
+    }
+
+    try {
+      setResumeUploading(true);
+      setResumeMessage("Uploading resume to Cloudinary...");
+
+      const response = await uploadResumeFile(file);
+
+      setFormData((prev) => ({
+        ...prev,
+        resumeUrl: response.data.url
+      }));
+
+      setResumeMessage("Resume uploaded successfully.");
+    } catch (error) {
+      setResumeMessage(
+        error.response?.data?.message ||
+          "Resume upload failed. You can paste a resume link manually."
+      );
+    } finally {
+      setResumeUploading(false);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: value
     });
   };
 
@@ -113,8 +157,8 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
       ...formData,
       contact: {
         ...formData.contact,
-        [name]: value,
-      },
+        [name]: value
+      }
     });
   };
 
@@ -130,7 +174,7 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
 
   const removeSkill = (index) => {
     const updatedSkills = formData.skills.filter((_, i) => i !== index);
-    setFormData({ ...formData, skills: updatedSkills });
+    setFormData({ ...formData, skills: updatedSkills.length ? updatedSkills : [""] });
   };
 
   const handleProjectChange = (index, field, value) => {
@@ -153,9 +197,10 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
 
   const removeProjectTech = (projectIndex, techIndex) => {
     const updatedProjects = [...formData.projects];
-    updatedProjects[projectIndex].techStack = updatedProjects[
-      projectIndex
-    ].techStack.filter((_, i) => i !== techIndex);
+    const newStack = updatedProjects[projectIndex].techStack.filter(
+      (_, i) => i !== techIndex
+    );
+    updatedProjects[projectIndex].techStack = newStack.length ? newStack : [""];
     setFormData({ ...formData, projects: updatedProjects });
   };
 
@@ -169,14 +214,35 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
           description: "",
           techStack: [""],
           githubLink: "",
-          liveDemo: "",
-        },
-      ],
+          liveDemo: ""
+        }
+      ]
     });
   };
 
   const removeProject = (index) => {
     const updatedProjects = formData.projects.filter((_, i) => i !== index);
+    setFormData({
+      ...formData,
+      projects: updatedProjects.length ? updatedProjects : emptyForm.projects
+    });
+  };
+
+  const handleProjectDragStart = (e, index) => {
+    e.dataTransfer.setData("projectIndex", String(index));
+  };
+
+  const handleProjectDrop = (e, dropIndex) => {
+    e.preventDefault();
+
+    const dragIndex = Number(e.dataTransfer.getData("projectIndex"));
+
+    if (dragIndex === dropIndex) return;
+
+    const updatedProjects = [...formData.projects];
+    const [draggedProject] = updatedProjects.splice(dragIndex, 1);
+    updatedProjects.splice(dropIndex, 0, draggedProject);
+
     setFormData({ ...formData, projects: updatedProjects });
   };
 
@@ -195,19 +261,51 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
           company: "",
           role: "",
           duration: "",
-          description: "",
-        },
-      ],
+          description: ""
+        }
+      ]
     });
   };
 
   const removeExperience = (index) => {
     const updatedExperience = formData.experience.filter((_, i) => i !== index);
-    setFormData({ ...formData, experience: updatedExperience });
+    setFormData({
+      ...formData,
+      experience: updatedExperience.length ? updatedExperience : emptyForm.experience
+    });
+  };
+
+  const validateForm = () => {
+    if (!formData.username.trim()) {
+      return "Username is required.";
+    }
+
+    if (!/^[a-z0-9-]+$/.test(formData.username.trim().toLowerCase())) {
+      return "Username can only use lowercase letters, numbers, and hyphens.";
+    }
+
+    if (!formData.fullName.trim()) {
+      return "Full name is required.";
+    }
+
+    if (formData.contact.email && !formData.contact.email.includes("@")) {
+      return "Please enter a valid email address.";
+    }
+
+    return "";
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const error = validateForm();
+
+    if (error) {
+      setFormError(error);
+      return;
+    }
+
+    setFormError("");
 
     const cleanedData = {
       ...formData,
@@ -217,11 +315,11 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
         .filter((project) => project.name.trim() !== "")
         .map((project) => ({
           ...project,
-          techStack: project.techStack.filter((tech) => tech.trim() !== ""),
+          techStack: project.techStack.filter((tech) => tech.trim() !== "")
         })),
       experience: formData.experience.filter(
         (item) => item.company.trim() !== "" || item.role.trim() !== ""
-      ),
+      )
     };
 
     onSubmit(cleanedData);
@@ -233,7 +331,8 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
         <div>
           <h2>Import from CV</h2>
           <p>
-            Upload a PDF CV to auto-fill the form, or skip this and enter details manually.
+            Upload a PDF CV to auto fill the form, or skip this and enter details
+            manually.
           </p>
         </div>
 
@@ -246,11 +345,30 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
         {cvMessage && <p className="cv-message">{cvMessage}</p>}
       </div>
 
+      <div className="cv-import-box">
+        <div>
+          <h2>Resume Upload</h2>
+          <p>
+            Upload a resume PDF to Cloudinary, or paste a resume URL manually below.
+          </p>
+        </div>
+
+        <label className="cv-upload-label">
+          Upload Resume PDF
+          <input type="file" accept="application/pdf" onChange={handleResumeUpload} />
+        </label>
+
+        {resumeUploading && <p className="cv-message">Uploading resume...</p>}
+        {resumeMessage && <p className="cv-message">{resumeMessage}</p>}
+      </div>
+
+      {formError && <div className="form-error">{formError}</div>}
+
       <div className="form-section-header">
         <span>01</span>
         <div>
           <h2>Personal Information</h2>
-          <p>Add your main portfolio identity and short introduction.</p>
+          <p>Add your main portfolio identity and introduction.</p>
         </div>
       </div>
 
@@ -291,6 +409,16 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
         </div>
 
         <div>
+          <label>Portfolio Theme</label>
+          <select name="theme" value={formData.theme} onChange={handleChange}>
+            <option value="default">Default Blue</option>
+            <option value="dark">Dark Premium</option>
+            <option value="minimal">Minimal Light</option>
+            <option value="emerald">Emerald</option>
+          </select>
+        </div>
+
+        <div>
           <label>Profile Image URL</label>
           <input
             type="text"
@@ -298,6 +426,17 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
             value={formData.profileImage}
             onChange={handleChange}
             placeholder="https://placehold.co/150x150"
+          />
+        </div>
+
+        <div>
+          <label>Resume PDF URL</label>
+          <input
+            type="text"
+            name="resumeUrl"
+            value={formData.resumeUrl}
+            onChange={handleChange}
+            placeholder="Paste resume PDF link or upload above"
           />
         </div>
       </div>
@@ -308,15 +447,6 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
         value={formData.bio}
         onChange={handleChange}
         placeholder="Write a short professional bio"
-      />
-
-      <label>Resume PDF URL</label>
-      <input
-        type="text"
-        name="resumeUrl"
-        value={formData.resumeUrl}
-        onChange={handleChange}
-        placeholder="Paste a Google Drive, Cloudinary, or portfolio resume PDF link"
       />
 
       <div className="form-section-header">
@@ -377,7 +507,7 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
         <span>03</span>
         <div>
           <h2>Skills</h2>
-          <p>Add your technical and professional skills.</p>
+          <p>Add technical and professional skills.</p>
         </div>
       </div>
 
@@ -404,12 +534,21 @@ function PortfolioForm({ initialData, onSubmit, buttonText }) {
         <span>04</span>
         <div>
           <h2>Projects</h2>
-          <p>Add your best project work.</p>
+          <p>Drag project cards to reorder them.</p>
         </div>
       </div>
 
       {formData.projects.map((project, projectIndex) => (
-        <div className="form-card" key={projectIndex}>
+        <div
+          className="form-card draggable-card"
+          key={projectIndex}
+          draggable
+          onDragStart={(e) => handleProjectDragStart(e, projectIndex)}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => handleProjectDrop(e, projectIndex)}
+        >
+          <div className="drag-label">Drag to reorder</div>
+
           <label>Project Name</label>
           <input
             type="text"
