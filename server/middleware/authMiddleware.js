@@ -16,7 +16,7 @@ export const protectOptional = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "dev_secret_key");
     req.user = await User.findById(decoded.id).select("-password");
   } catch (error) {
     req.user = null;
@@ -43,7 +43,7 @@ export const protectRequired = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "dev_secret_key");
     req.user = await User.findById(decoded.id).select("-password");
 
     if (!req.user) {

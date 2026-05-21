@@ -1,8 +1,11 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import PortfolioForm from "../components/PortfolioForm";
 
 function CreatePortfolio() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const initialData = location.state?.portfolioData;
 
   const handlePreview = (formData) => {
     navigate("/preview", {
@@ -23,7 +26,11 @@ function CreatePortfolio() {
         </p>
       </div>
 
-      <PortfolioForm onSubmit={handlePreview} buttonText="Preview Portfolio" />
+      <PortfolioForm
+        initialData={initialData}
+        onSubmit={handlePreview}
+        buttonText="Preview Portfolio"
+      />
     </div>
   );
 }
