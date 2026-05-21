@@ -78,6 +78,37 @@ export const updatePortfolio = async (req, res) => {
   try {
     const cleanedBody = cleanPortfolioBody(req.body);
 
+    const existing = await Portfolio.findOne({
+      username: req.params.username.toLowerCase()
+    });
+
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Portfolio not found"
+      });
+    }
+
+    if (existing.owner && (!req.user || existing.owner.toString() !== req.user._id.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorised to modify this portfolio."
+      });
+    }
+
+    if (cleanedBody.username && cleanedBody.username !== req.params.username.toLowerCase()) {
+      const existingWithNewName = await Portfolio.findOne({
+        username: cleanedBody.username
+      });
+
+      if (existingWithNewName) {
+        return res.status(400).json({
+          success: false,
+          message: "Username already exists. Please choose another username."
+        });
+      }
+    }
+
     const portfolio = await Portfolio.findOneAndUpdate(
       { username: req.params.username.toLowerCase() },
       cleanedBody,
@@ -86,13 +117,6 @@ export const updatePortfolio = async (req, res) => {
         runValidators: true
       }
     );
-
-    if (!portfolio) {
-      return res.status(404).json({
-        success: false,
-        message: "Portfolio not found"
-      });
-    }
 
     res.status(200).json({
       success: true,
@@ -109,16 +133,27 @@ export const updatePortfolio = async (req, res) => {
 
 export const deletePortfolio = async (req, res) => {
   try {
-    const portfolio = await Portfolio.findOneAndDelete({
+    const existing = await Portfolio.findOne({
       username: req.params.username.toLowerCase()
     });
 
-    if (!portfolio) {
+    if (!existing) {
       return res.status(404).json({
         success: false,
         message: "Portfolio not found"
       });
     }
+
+    if (existing.owner && (!req.user || existing.owner.toString() !== req.user._id.toString())) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorised to delete this portfolio."
+      });
+    }
+
+    await Portfolio.deleteOne({
+      username: req.params.username.toLowerCase()
+    });
 
     res.status(200).json({
       success: true,

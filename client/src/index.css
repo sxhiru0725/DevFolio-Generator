@@ -699,3 +699,132 @@ select {
     flex-direction: column;
   }
 }
+
+/* Dashboard Page Styles */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  margin-top: 30px;
+}
+
+.dashboard-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-strong);
+  border-color: var(--primary);
+}
+
+.dashboard-card-header {
+  margin-bottom: 16px;
+  padding-right: 80px;
+  /* Leave space for theme badge */
+}
+
+.dashboard-card h3 {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  color: var(--dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dashboard-card-subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.dashboard-card-details {
+  margin-bottom: 24px;
+}
+
+.dashboard-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.dashboard-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dashboard-btn {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 80px;
+}
+
+.dashboard-btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.dashboard-btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+.dashboard-btn-secondary {
+  background: var(--border);
+  color: var(--text);
+}
+
+.dashboard-btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+body[data-theme="dark"] .dashboard-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dashboard-btn-danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.dashboard-btn-danger:hover {
+  background: var(--danger);
+  color: white;
+}
+
+.dashboard-theme-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 99px;
+  text-transform: capitalize;
+}

@@ -15,7 +15,7 @@ function PreviewPortfolio() {
     } catch (error) {
       alert(
         error.response?.data?.message ||
-          "Something went wrong while publishing the portfolio."
+        "Something went wrong while publishing the portfolio."
       );
     }
   };
@@ -44,7 +44,7 @@ function PreviewPortfolio() {
         </div>
 
         <div className="preview-actions">
-          <button className="secondary-btn" onClick={() => navigate("/create")}>
+          <button className="secondary-btn" onClick={() => navigate("/create", { state: { portfolioData: portfolio } })}>
             Back to Edit
           </button>
 

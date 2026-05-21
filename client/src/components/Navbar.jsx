@@ -21,6 +21,7 @@ function Navbar() {
 
         {user ? (
           <>
+            <Link to="/dashboard">Dashboard</Link>
             <span className="nav-user">Hi, {user.name}</span>
             <button className="nav-button" onClick={logout}>
               Logout
