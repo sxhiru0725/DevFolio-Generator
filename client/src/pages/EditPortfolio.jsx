@@ -31,11 +31,11 @@ function EditPortfolio() {
   const handleUpdate = async (formData) => {
     try {
       await updatePortfolio(username, formData);
-      navigate(`/portfolio/${username}`);
+      navigate(`/portfolio/${formData.username.toLowerCase().trim()}`);
     } catch (error) {
       alert(
         error.response?.data?.message ||
-          "Something went wrong while updating the portfolio."
+        "Something went wrong while updating the portfolio."
       );
     }
   };
